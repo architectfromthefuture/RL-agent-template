@@ -1,0 +1,14 @@
+[project]
+name = "minimal-rl-agent"
+version = "0.1.0"
+description = "A minimal reinforcement learning agent template using Gymnasium and PyTorch."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "gymnasium[classic-control]",
+    "numpy",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

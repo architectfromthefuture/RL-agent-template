@@ -1,0 +1,81 @@
+Metadata-Version: 2.4
+Name: minimal-rl-agent
+Version: 0.1.0
+Summary: Minimal DQN-style RL agent template (Gymnasium + PyTorch, CartPole-v1)
+Author: Template authors
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: gymnasium[classic-control]>=0.29.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: torch>=2.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+
+# Minimal RL agent template
+
+A **small** [DQN](https://en.wikipedia.org/wiki/Q-learning)-style agent on **Gymnasium** + **PyTorch**, using **`CartPole-v1`**. The goal is to **read**, **run**, and **change** one file at a time—not to learn a framework.
+
+## The core loop
+
+Reinforcement learning is usually drawn as a cycle:
+
+**Observe → Think → Decide → Act → Learn → Repeat**
+
+In code, that maps cleanly to:
+
+| Idea | What it is | Where it lives |
+|------|------------|----------------|
+| **1. Environment** | The world: physics, rules, reward | `gymnasium.make("CartPole-v1")` in `train.py` / `evaluate.py` |
+| **2. State representation** | What the agent *sees* each step | The observation vector from `reset` / `step` (CartPole: 4 numbers) |
+| **3. Policy / model** | The “brain” that scores actions | `QNetwork` in `model.py`, used by `DQNAgent` in `agent.py` |
+| **4. Memory** | Stored experience | `ReplayBuffer` in `memory.py` |
+| **5. Learning** | Update the model from past data | `DQNAgent.learn_step()` in `agent.py` |
+| **6. Exploration vs exploitation** | Random try vs use what you know | Epsilon-greedy in `DQNAgent.select_action()` |
+
+There is no separate “Think” function on purpose: for DQN, **thinking** is “run the network on the observation”; **deciding** is “pick the best action (or explore).”
+
+## Quick start
+
+Create a virtual environment, install, train, then (optionally) evaluate a saved checkpoint.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e .
+
+python scripts/train_cartpole.py --episodes 400 --save cartpole.pt
+python scripts/evaluate_cartpole.py cartpole.pt --episodes 10
+```
+
+You should see episode returns rise over time; CartPole is “solved” in Gymnasium’s sense when the **average return over the last 100 episodes reaches 475**. The training script prints a hint when that rolling average is hit.
+
+**Tests** (after `pip install -e '.[dev]'`):
+
+```bash
+pytest
+```
+
+## Project layout
+
+- `src/minimal_rl_agent/model.py` — Q-network
+- `src/minimal_rl_agent/memory.py` — replay buffer
+- `src/minimal_rl_agent/agent.py` — epsilon-greedy action + one TD learning step
+- `src/minimal_rl_agent/train.py` — training loop and optional checkpoint save
+- `src/minimal_rl_agent/evaluate.py` — greedy evaluation and checkpoint load
+- `scripts/train_cartpole.py` — CLI entry for training
+- `scripts/evaluate_cartpole.py` — CLI entry for evaluation
+
+## What to change first
+
+Good first experiments (still one algorithm):
+
+- Tweak `TrainConfig` in `train.py` (`batch_size`, `epsilon_*`, `min_replay_size`).
+- Change network width in `QNetwork`.
+- Log or plot `returns` from `train_cartpole()`.
+
+This repo intentionally avoids extra infrastructure (tracking, Docker, dashboards, multiple algorithms) so the loop stays obvious.
+
+## License
+
+MIT (see `pyproject.toml`).
